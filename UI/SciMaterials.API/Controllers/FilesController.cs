@@ -47,7 +47,7 @@ public class FilesController : ControllerBase
             LogError(ex);
             var response = new FileNotFoundResponse()
             {
-                Code = Ok().StatusCode
+                Code = new NotFoundResult().StatusCode
             };
             return Ok(response);
         }
@@ -70,7 +70,6 @@ public class FilesController : ControllerBase
                 FileName = fileInfo.FileName,
                 Hash = fileInfo.GetHashCode().ToString(),
                 Size = fileInfo.Size,
-                Code = Ok().StatusCode
             };
             return Ok(response);
         }
@@ -79,7 +78,7 @@ public class FilesController : ControllerBase
             LogError(ex);
             var response = new FileNotFoundResponse()
             {
-                Code = Ok().StatusCode
+                Code = new NotFoundResult().StatusCode
             };
             return Ok(response);
         }
