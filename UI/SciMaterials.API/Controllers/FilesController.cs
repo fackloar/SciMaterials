@@ -32,24 +32,14 @@ public class FilesController : ControllerBase
         try
         {
             var fileInfo = _fileService.GetFileInfoByHash(hash);
-            var response = new FileGotResponse()
-            {
-                ContentType = fileInfo.ContentType,
-                FileName = fileInfo.FileName,
-                Hash = fileInfo.GetHashCode().ToString(),
-                Size = fileInfo.Size,
-                Code = Ok().StatusCode
-            };
+            var response = fileInfo.ToFileGotResponse();
             return Ok(response);
         }
         catch (FileNotFoundException ex)
         {
             LogError(ex);
-            var fileNotFoundResponse = new ErrorResponse()
-            {
-                Code = new NotFoundResult().StatusCode
-            };
-            return Ok(fileNotFoundResponse);
+            var errorResponse = new ErrorResponse();
+            return Ok(errorResponse.NotFound());
         }
         catch (Exception ex)
         {
@@ -64,23 +54,14 @@ public class FilesController : ControllerBase
         try
         {
             var fileInfo = _fileService.GetFileInfoById(id);
-            var response = new FileGotResponse()
-            {
-                ContentType = fileInfo.ContentType,
-                FileName = fileInfo.FileName,
-                Hash = fileInfo.GetHashCode().ToString(),
-                Size = fileInfo.Size,
-            };
+            var response = fileInfo.ToFileGotResponse();
             return Ok(response);
         }
         catch (FileNotFoundException ex)
         {
             LogError(ex);
-            var fileNotFoundResponse = new ErrorResponse()
-            {
-                Code = new NotFoundResult().StatusCode
-            };
-            return Ok(fileNotFoundResponse);
+            var errorResponse = new ErrorResponse();
+            return Ok(errorResponse.NotFound());
         }
         catch (Exception ex)
         {
@@ -100,11 +81,8 @@ public class FilesController : ControllerBase
                !MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader) ||
                string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
             {
-                var unsupportedMediaTypeResponse = new ErrorResponse()
-                {
-                    Code = new UnsupportedMediaTypeResult().StatusCode
-                };
-                return Ok(unsupportedMediaTypeResponse);
+                var unsupportedMediaErrorResponse = new ErrorResponse().UnsupportedMedia();
+                return Ok(unsupportedMediaErrorResponse);
             }
 
             var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
@@ -126,11 +104,7 @@ public class FilesController : ControllerBase
 
                 section = await reader.ReadNextSectionAsync();
             }
-            var badRequestResponse = new ErrorResponse()
-            {
-                Code = new BadRequestResult().StatusCode
-            };
-
+            var badRequestResponse = new ErrorResponse().BadRequest();
             return Ok(badRequestResponse);
         }
         catch (Exception ex)

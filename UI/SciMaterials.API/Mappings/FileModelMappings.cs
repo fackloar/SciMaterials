@@ -15,4 +15,15 @@ public static class FileModelMappings
                 ContentType = model.ContentType,
                 Size = model.Size
             };
+
+    public static FileGotResponse? ToFileGotResponse(this FileModel? model)
+        => model is null
+            ? null
+            : new FileGotResponse()
+            {
+                Hash = model.Hash,
+                FileName = model.FileName,
+                ContentType = model.ContentType,
+                Size = model.Size
+            };
 }
