@@ -45,11 +45,11 @@ public class FilesController : ControllerBase
         catch (FileNotFoundException ex)
         {
             LogError(ex);
-            var response = new FileNotFoundResponse()
+            var fileNotFoundResponse = new ErrorResponse()
             {
                 Code = new NotFoundResult().StatusCode
             };
-            return Ok(response);
+            return Ok(fileNotFoundResponse);
         }
         catch (Exception ex)
         {
@@ -76,11 +76,11 @@ public class FilesController : ControllerBase
         catch (FileNotFoundException ex)
         {
             LogError(ex);
-            var response = new FileNotFoundResponse()
+            var fileNotFoundResponse = new ErrorResponse()
             {
                 Code = new NotFoundResult().StatusCode
             };
-            return Ok(response);
+            return Ok(fileNotFoundResponse);
         }
         catch (Exception ex)
         {
@@ -100,7 +100,11 @@ public class FilesController : ControllerBase
                !MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader) ||
                string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
             {
-                return new UnsupportedMediaTypeResult();
+                var unsupportedMediaTypeResponse = new ErrorResponse()
+                {
+                    Code = new UnsupportedMediaTypeResult().StatusCode
+                };
+                return Ok(unsupportedMediaTypeResponse);
             }
 
             var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
@@ -116,13 +120,18 @@ public class FilesController : ControllerBase
                 {
                     _logger.LogInformation("Section contains file {file}", contentDisposition.FileName.Value);
                     var result = await _fileService.UploadAsync(section.Body, contentDisposition.FileName.Value, section.ContentType ?? "application/octet-stream").ConfigureAwait(false);
+
                     return Ok(result.ToViewModel());
                 }
 
                 section = await reader.ReadNextSectionAsync();
             }
+            var badRequestResponse = new ErrorResponse()
+            {
+                Code = new BadRequestResult().StatusCode
+            };
 
-            return BadRequest("No files data in the request.");
+            return Ok(badRequestResponse);
         }
         catch (Exception ex)
         {
